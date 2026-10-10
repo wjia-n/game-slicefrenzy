@@ -106,7 +106,7 @@ class _ProScreenState extends State<ProScreen> {
             const SizedBox(height: 12),
             Center(
               child: Text(
-                'Pro product: ${StoreService.proId}\nTips: ${StoreService.coffeeId}, ${StoreService.chocolateId}',
+                'Pro product: ${''}\nTips: ${StoreService.coffeeId}, ${StoreService.chocolateId}',
                 textAlign: TextAlign.center,
                 style: FrenzyText.label(10, theme)
                     .copyWith(color: theme.ink.withValues(alpha: 0.4)),
