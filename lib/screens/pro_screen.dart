@@ -26,26 +26,18 @@ class _ProScreenState extends State<ProScreen> {
   @override
   void initState() {
     super.initState();
-    widget.store.proPurchased.addListener(_onPro);
     widget.store.lastThanks.addListener(_onThanks);
     widget.store.purchaseError.addListener(_onError);
   }
 
   @override
   void dispose() {
-    widget.store.proPurchased.removeListener(_onPro);
     widget.store.lastThanks.removeListener(_onThanks);
     widget.store.purchaseError.removeListener(_onError);
     super.dispose();
   }
 
-  void _onPro() {
-    if (widget.store.proPurchased.value) {
-      widget.settings.setPro(true);
-      widget.store.proPurchased.value = false;
-    }
-  }
-
+  
   void _onThanks() {
     final msg = widget.store.lastThanks.value;
     if (msg != null && mounted) {

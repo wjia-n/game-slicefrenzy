@@ -47,7 +47,7 @@ class SliceSettings extends ChangeNotifier {
   int customBladeColor = 0xFFE53935;
   double customBladeWidth = 13.0;
   int difficulty = 1; // normal default
-  bool isPro = false;
+  bool isPro = true; // everything unlocked — no Pro version
   Map<String, int> bestScores = {};
   int totalSliced = 0;
   int gamesPlayed = 0;
@@ -87,7 +87,7 @@ class SliceSettings extends ChangeNotifier {
     customBladeColor = p.getInt(_kBladeColor) ?? 0xFFE53935;
     customBladeWidth = (p.getDouble(_kBladeWidth) ?? 13.0).clamp(8.0, 22.0);
     difficulty = (p.getInt(_kDifficulty) ?? 1).clamp(0, 2);
-    isPro = p.getBool(_kIsPro) ?? false;
+    isPro = true; // everything unlocked
     bestScores = _decodeBest(p.getString(_kBestScores));
     totalSliced = p.getInt(_kTotalSliced) ?? 0;
     gamesPlayed = p.getInt(_kGames) ?? 0;
