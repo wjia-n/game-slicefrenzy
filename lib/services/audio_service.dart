@@ -179,50 +179,6 @@ class SliceAudio {
     return out;
   }
 
-  List<double> _pluckMelody(
-      List<double> freqs, double secs, List<double> onsets) {
-    // Bouncy kalimba-like plucks with fast decay.
-    final n = (_rate * secs).round();
-    final out = List<double>.filled(n, 0);
-    for (final pair in Iterable.generate(freqs.length, (i) => i)) {
-      final start = (_rate * onsets[pair]).round();
-      final len = (_rate * 0.55).round();
-      final f = freqs[pair];
-      for (int i = 0; i < len && start + i < n; i++) {
-        final t = i / _rate;
-        out[start + i] += (sin(2 * pi * f * t) + 0.4 * sin(4 * pi * f * t)) *
-            exp(-t * 7) *
-            0.35;
-      }
-    }
-    return out;
-  }
-
-  List<double> _drumLoop(double secs, double bpm) {
-    // Kick + shaker pattern for the game track.
-    final n = (_rate * secs).round();
-    final out = List<double>.filled(n, 0);
-    final beat = 60 / bpm;
-    final kicks = (secs / beat).floor();
-    for (int k = 0; k < kicks; k++) {
-      final start = (_rate * k * beat).round();
-      final len = (_rate * 0.18).round();
-      for (int i = 0; i < len && start + i < n; i++) {
-        final t = i / _rate;
-        out[start + i] += sin(2 * pi * (110 - 60 * t) * t) * exp(-t * 18) * 0.5;
-      }
-      // Shaker on off-beats.
-      final sStart = (_rate * (k * beat + beat / 2)).round();
-      final sLen = (_rate * 0.08).round();
-      for (int i = 0; i < sLen && sStart + i < n; i++) {
-        final t = i / _rate;
-        out[sStart + i] +=
-            (_rand.nextDouble() * 2 - 1) * exp(-t * 60) * 0.18;
-      }
-    }
-    return out;
-  }
-
   /// Soft synth pad from a chord (shared helper).
   List<double> _padChord(List<double> freqs, double secs) {
     final n = (_rate * secs).round();
