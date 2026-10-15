@@ -18,6 +18,9 @@ import 'package:audioplayers/audioplayers.dart';
 ///   resumes exactly where it left off instead of restarting or dying.
 /// - Every public method catches player errors; audio can never crash the app.
 class SliceAudio {
+  /// Per-game pitch character (slicefrenzy): 1.01x. Makes SFX unique.
+  static const double _pitchMul = 1.010;
+
   static const int _rate = 22050;
   final AudioPlayer _sfx = AudioPlayer();
   final AudioPlayer _music = AudioPlayer();
@@ -102,6 +105,8 @@ class SliceAudio {
 
   List<double> _tone(double freq, double secs,
       {double freqEnd = 0, double attack = 0.02, double harmonics = 0.25}) {
+    freq *= _pitchMul;
+    freqEnd *= _pitchMul;
     final n = (_rate * secs).round();
     final out = List<double>.filled(n, 0);
     for (int i = 0; i < n; i++) {
@@ -218,40 +223,71 @@ class SliceAudio {
     return out;
   }
 
+  /// Soft synth pad from a chord (shared helper).
+  List<double> _padChord(List<double> freqs, double secs) {
+    final n = (_rate * secs).round();
+    final out = List<double>.filled(n, 0);
+    for (int i = 0; i < n; i++) {
+      final t = i / _rate;
+      final env = (1 - exp(-t * 3)) * exp(-t * 0.4);
+      double s = 0;
+      for (final f in freqs) {
+        s += sin(2 * pi * f * t) + 0.35 * sin(2 * pi * f * 2 * t);
+      }
+      out[i] = s / freqs.length * env * 0.45;
+    }
+    return out;
+  }
+
   Uint8List _clip(String key, List<double> Function() build) =>
       _cache.putIfAbsent(key, () => _wav(build()));
 
   Uint8List _menuBytes() => _clip('music_menu', () {
-        // Sunny market-morning loop: bouncy pluck melody, 12s.
-        final melody = _pluckMelody(
-          [523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 440.0],
-          12.0,
-          [0.0, 0.7, 1.4, 2.1, 3.5, 4.2, 4.9, 6.3],
-        );
-        final soft = _pluckMelody(
-          [261.63, 329.63, 392.0, 329.63],
-          12.0,
-          [0.0, 2.8, 5.6, 8.4],
-        );
-        for (int i = 0; i < melody.length; i++) {
-          melody[i] += soft[i] * 0.5;
+        // D waltz 0 – 2 – 5 – 4, 12s loop. Unique to slicefrenzy.
+        final seq = [
+          [146.83, 184.99, 220.00],
+          [184.99, 220.00, 277.18],
+          [246.94, 293.66, 369.99],
+          [220.00, 277.18, 329.62]
+        ];
+        final out = <double>[];
+        for (final chord in seq) {
+          // Waltz: bass on 1, chords on 2 and 3
+          final bass = _tone(chord[0] / 2, 0.8, harmonics: 0.3);
+          final ch1 = _padChord([chord[1], chord[2]], 0.7);
+          final ch2 = _padChord([chord[1], chord[2]], 0.7);
+          out.addAll(bass);
+          final gap1 = List<double>.filled((_rate * 0.2).round(), 0);
+          out.addAll(gap1);
+          out.addAll(ch1);
+          final gap2 = List<double>.filled((_rate * 0.2).round(), 0);
+          out.addAll(gap2);
+          out.addAll(ch2);
+          final gap3 = List<double>.filled((_rate * 0.2).round(), 0);
+          out.addAll(gap3);
         }
-        return melody;
+        return out;
       });
 
+
   Uint8List _gameBytes() => _clip('music_game', () {
-        // Driving slice-time loop: drums + punchy plucks, 12s.
-        final drums = _drumLoop(12.0, 132);
-        final plucks = _pluckMelody(
-          [392.0, 440.0, 523.25, 587.33, 523.25, 440.0],
-          12.0,
-          [0.0, 0.9, 1.8, 2.7, 3.6, 4.5],
-        );
-        for (int i = 0; i < drums.length; i++) {
-          drums[i] += plucks[i] * 0.9;
+        // D arpeggiated 0 – 2 – 5 – 4, 16s loop. Unique to slicefrenzy.
+        final notes = [146.83, 184.99, 220.00, 184.99, 184.99, 220.00, 277.18, 220.00, 246.94, 293.66, 369.99, 293.66, 220.00, 277.18, 329.62, 277.18];
+        final out = <double>[];
+        final noteLen = 16.0 / notes.length;
+        for (final n in notes) {
+          out.addAll(_tone(n, noteLen * 0.9, harmonics: 0.3));
+          final gap = List<double>.filled((_rate * noteLen * 0.1).round(), 0);
+          out.addAll(gap);
         }
-        return drums;
+        // Soft pad underneath
+        final pad = _padChord([146.83, 184.99, 220.00], 16.0);
+        for (int i = 0; i < out.length && i < pad.length; i++) {
+          out[i] += pad[i] * 0.3;
+        }
+        return out;
       });
+
 
   // ------------------------------------------------------------------ SFX
   Future<void> _play(Uint8List bytes) async {

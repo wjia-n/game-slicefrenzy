@@ -259,7 +259,7 @@ class _MenuScreenState extends State<MenuScreen> {
           maxLength: 18,
           autofocus: true,
           style: FrenzyText.body(16, theme),
-          decoration: const InputDecoration(hintText: 'e.g. Juice Ninja'),
+          decoration: const InputDecoration(hintText: 'e.g. Juice Slicer'),
         ),
         actions: [
           ElevatedButton(
