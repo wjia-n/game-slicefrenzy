@@ -3,6 +3,7 @@ import '../services/audio_service.dart';
 import '../services/settings_service.dart';
 import '../theme/frenzy_art.dart';
 import '../theme/frenzy_themes.dart';
+import '../transfer/transfer_ui.dart';
 
 /// Settings: profile name, audio toggles + volume, stats, reset.
 class SettingsScreen extends StatelessWidget {
@@ -32,6 +33,7 @@ class SettingsScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(18),
           children: [
+              TransferSaveTile(gameSlug: 'slicefrenzy'),
             _Section(
               theme: theme,
               title: 'Slicer profile',
