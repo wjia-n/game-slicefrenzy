@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../engine/slice_engine.dart';
@@ -206,7 +207,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   Expanded(
                       child: _SmallButton(
                           theme: theme,
-                          label: settings.isPro ? 'PRO ✓' : 'Go PRO',
+                          label: defaultTargetPlatform == TargetPlatform.iOS ? '⭐ Gold Star' : (settings.isPro ? 'PRO ✓' : 'Go PRO'),
                           icon: Icons.star,
                           highlight: !settings.isPro,
                           onTap: _goPro)),
